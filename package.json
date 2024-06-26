@@ -1,5 +1,5 @@
 {
-  "name": "mini-snabbdom",
+  "name": "learn-vue2-ast",
   "version": "1.0.0",
   "description": "一个学习snabbdom相关的库",
   "main": "index.js",
@@ -9,15 +9,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/parrot-designa/mini-snabbdom.git"
+    "url": "git+https://github.com/parrot-designa/learn-vue2-ast.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/parrot-designa/mini-snabbdom/issues"
+    "url": "https://github.com/parrot-designa/learn-vue2-ast/issues"
   },
-  "homepage": "https://github.com/parrot-designa/mini-snabbdom#readme",
+  "homepage": "https://github.com/parrot-designa/learn-vue2-ast#readme",
   "dependencies": {
     "vue": "2.7.16"
   },
