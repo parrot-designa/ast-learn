@@ -1,7 +1,6 @@
 Vue2编译原理
 
 
-
 # 一、Vue项目开发模式
 
 Vue除了runtime-only模式外，还有runtime-compiler模式。
