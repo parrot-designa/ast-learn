@@ -46,8 +46,8 @@ export function parseHTML(html){
             advance(start[0].length)
             let end,attr
 
-            attr = html.match(attribute)
-            debugger;
+            attr = html.match(attribute) 
+            
             while(
                 // 直到找到结束标签否则一直循环
                 !(end = html.match(startTagClose))

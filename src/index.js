@@ -7,7 +7,8 @@ new Vue({
     template,
     data(){
         return {
-            name:"hello"
+            name:"hello",
+            key:"style"
         }
     }
 }).$mount(document.getElementById('container'));
