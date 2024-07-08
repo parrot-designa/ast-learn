@@ -5,11 +5,14 @@ import {
     attribute,
     endTag
 } from "./reg";
+import {
+    isUnaryTag
+} from "./util";
 
 /**
  * 解析模板
  */
-export function parseHTML(html){
+export function parseHTML(html,options={}){
     /**
      * 主要用于追踪和管理模板中的嵌套标签结构。
      * 当解析器遇到一个开始标签（例如 <div> 或 <p>）时，它会创建一个对象来描述这个标签的信息，如标签名、属性、开始和结束位置等，并将这个对象压入 stack 数组中。
@@ -22,6 +25,7 @@ export function parseHTML(html){
      * 5. 模板结构还原: 在整个解析过程中，stack 的状态反映了模板的结构。解析结束后，stack 应该为空，表示所有开始标签都被正确地闭合。
      */
     const stack = [];
+    let index = 0;
     // 用于追踪上一次循环处理后剩余未解析的 HTML 字符串部分
     let last;
     while(html){
@@ -45,15 +49,21 @@ export function parseHTML(html){
          */
         let textEnd = html.indexOf('<');
         if(textEnd === 0){
-
+            /**
+             *  匹配  </...>  结束标签 必须以 </ 开始
+             */ 
             const endTagMatch = html.match(endTag);
             if(endTagMatch){
+                // 在截取字符串前保存当前下标
+                const curIndex = index;
                 advance(endTagMatch[0].length);
-                parseEndTag(endTagMatch[1], curIndex, index)
+                parseEndTag(endTagMatch[1],curIndex,index);
                 continue;
             }
 
-            // 解析开始标签
+            /**
+             * 匹配 < 开始标签 必须以 < 开始
+             */
             const startTagMatch = parseStartTag();
             if(startTagMatch){
                 handleStartTag(startTagMatch);
@@ -63,6 +73,9 @@ export function parseHTML(html){
         let rest,text
         if(textEnd >= 0){
             rest = html.slice(textEnd)
+            /**
+             * 获取标签中的文字
+             */
             text = html.substring(0, textEnd)
         }
 
@@ -72,6 +85,10 @@ export function parseHTML(html){
 
         if (text) {
             advance(text.length)
+        }
+
+        if(options.chars && text){
+            options.chars(text, index - text.length,index);
         }
     }
 
@@ -88,6 +105,7 @@ export function parseHTML(html){
      * 通过维护 stack，Vue 的解析器能够构建一个关于模板结构的抽象语法树（Abstract Syntax Tree，AST），这个 AST 后续会被用于生成对应的 VNode（虚拟节点），并最终渲染成真实的 DOM。AST 的构建过程依赖于 stack 来记录和管理标签的层级关系，确保每个开始标签都有对应的结束标签，从而保证模板的正确性和完整性。
      */
     function advance(n){
+        index += n;
         html = html.substring(n);
     }
 
@@ -111,21 +129,45 @@ export function parseHTML(html){
                 match.attrs.push(attr);
             }
             if(end){
+                match.unarySlash = end[1]
                 advance(end[0].length)
                 return match;
             }
         }
     }
 
-    function parseEndTag(tagName,start){
-        let lowerCasedTagName;
+    function parseEndTag(tagName,start,end){
+        let pos,lowerCasedTagName;
         if(tagName){
             lowerCasedTagName = tagName.toLowerCase();
+
+            for(pos = stack.length - 1;pos >=0;pos-- ){
+                if(stack[pos].lowerCasedTag === lowerCasedTagName){
+                    break;
+                }
+            }
+        }else{
+            pos = 0;
+        }
+        if(pos >= 0){
+            /**
+             * 从栈的顶部开始遍历，一直遍历到找到的匹配开始标签的位置。
+             * 这是因为，在HTML中，结束标签会闭合它自己以及它内部所有的开始标签，直到找到对应的开始标签为止。
+             */
+            for(let i = stack.length - 1; i>= pos;i--){
+                if (options.end) {
+                    options.end(stack[i].tag, start, end)
+                }
+            }
         }
     }
 
     function handleStartTag(match){
         const tagName = match.tagName;
+        // 自闭合标签
+        const unarySlash = match.unarySlash;
+        // 是否是自闭合标签
+        const unary = isUnaryTag(tagName) || !!unarySlash
         // 获取属性的数量
         const l = match.attrs.length
         // 初始化一个数组来存储标签的属性
@@ -144,10 +186,19 @@ export function parseHTML(html){
                 value: value
             }
         }
-        stack.push({
-            tag: tagName,
-            lowerCasedTag: tagName.toLowerCase(),
-            attrs
-        });
+        /**
+         * 不是自闭合标签才推入栈中
+         */
+        if(!unary){
+            stack.push({
+                tag: tagName,
+                lowerCasedTag: tagName.toLowerCase(),
+                attrs
+            });
+        }
+        
+        if(options.start){
+            options.start(tagName, attrs, unary)
+        }
     }
 }
