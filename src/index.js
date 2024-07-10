@@ -1,11 +1,16 @@
 import Vue from "vue/dist/vue.esm.browser";
 import { parse } from "./parse";
+import { generate } from "./codegen";
 
-let template = `<div v-if="true" style="color:red;">{{name}} 222</div>`;
+let template = `<div style="color:red;">{{name}} 222</div>`;
 let unaryTemplate = `<img />`
 
+const ast = parse(template);
+const code = generate(ast); 
+debugger;
+
 new Vue({
-    template,
+    render:new Function(code.render),
     data(){
         return {
             name:"Hello",
@@ -14,7 +19,6 @@ new Vue({
     }
 }).$mount(document.getElementById('container'));
 
-const ast = parse(template);
-debugger;
+
 
 
