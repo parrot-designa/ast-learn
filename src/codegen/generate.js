@@ -21,6 +21,13 @@ export function genElement(el,state){
     if(!tag) tag =`'${el.tag}'`
 
     /**
+     * ifProcessed 这个属性的作用是用来标记一个元素是否已经被处理过 v-if 或类似条件渲染指令
+     */
+    if(el.if && !el.ifProcessed){
+        return genIf(el, state)
+    }
+
+    /**
      * plain 属性用于标识一个元素节点是否被认为是“纯”的，即是否没有绑定任何动态特性。这个属性的值会在模板编译过程的不同阶段被计算和更新，以决定元素的编译策略。
      * 
      * plain的判断逻辑是：1.没有key 2.没有作用域插槽 3.没有属性 如果没有这三个 表示不用进行data的处理
@@ -105,4 +112,36 @@ export function genData(el,state){
     }
     data = data.replace(/,$/, '') + '}'
     return data
+}
+
+export function genIf(
+    el,
+    state
+){
+    el.ifProcessed = true 
+    return genIfConditions(el.ifConditions.slice(), state)
+}
+
+export function genIfConditions(
+    conditions,
+    state
+){
+    if (!conditions.length) {
+        /**
+         * _e() 是一个用于生成空的虚拟 DOM 节点（vnode）的辅助函数。它的全名实际上是 createEmptyNode()。
+         */
+        return '_e()'
+    } 
+    const condition = conditions.shift()
+    if(condition.exp){
+        return `(${condition.exp})?${genTernaryExp(
+            condition.block
+        )}:${genIfConditions(conditions, state)}`
+    }else{
+        return `${genTernaryExp(condition.block)}`
+    }
+
+    function genTernaryExp(el) {
+        return genElement(el, state)
+    }
 }
