@@ -4,10 +4,10 @@ import {
     dynamicArgAttribute,
     attribute,
     endTag
-} from "./reg";
+} from "../helpers/reg";
 import {
     isUnaryTag
-} from "./util";
+} from "../helpers/util";
 
 /**
  * 解析模板

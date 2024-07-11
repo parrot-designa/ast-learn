@@ -1,9 +1,13 @@
-import { parseHTML } from "./parseHTML";
+import { parseHTML } from "./html-parser";
 import { parseText } from "./text-parser";
+import { pluckModuleFunction } from "../helpers";
+
+let transforms
+
 /**
  * 将HTML字符串转化为ast
  */
-export function parse(template){
+export function parse(template,options){
     const stack = []
     let root,
         /**
@@ -33,7 +37,12 @@ export function parse(template){
          */
         inVPre = false;
 
+    transforms = pluckModuleFunction(options.modules, 'transformNode')
+
     function closeElement(element){
+
+        element = processElement(element, options)
+
         if(currentParent){
             currentParent.children.push(element)
             element.parent = currentParent
@@ -95,6 +104,17 @@ export function parse(template){
     return root;
 }
 
+/**
+ * 能够去除重复属性
+ */
+function makeAttrsMap(attrs){
+    const map = {};
+    for(let i = 0, l = attrs.length; i < l; i++){
+        map[attrs[i].name] = attrs[i].value;
+    }
+    return map;
+}
+
 export function createASTElement(
     tag,
     attrs,
@@ -103,8 +123,16 @@ export function createASTElement(
     return {
         type:1,
         tag,
-        attrsList:attrs,
+        attrsList: attrs,
+        attrsMap: makeAttrsMap(attrs),
         parent,
         children:[]
     }
+}
+
+export function processElement(element, options){
+    for (let i = 0; i < transforms.length; i++) {
+        element = transforms[i](element, options) || element
+    }
+    return element;
 }

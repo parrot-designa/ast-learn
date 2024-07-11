@@ -1,22 +1,33 @@
+import { CodegenState } from "../codegen";
+
 export function generate(
-    ast
+    ast,
+    options
 ){
-    const code = ast ? genElement(ast) : '_c("div")'
-    return {
-        /**
-         * with(this) 语句的使用主要是为了确保组件实例的作用域内的属性和方法可以在生成的代码中直接访问，
-         * 当Vue编译模版时，它会生成一个渲染函数，这个函数需要能访问到组件实例上的数据、计算属性、方法等。
-         * 
-         * 使用 with(this) 语句可以创建一个作用域，其中所有的变量引用都会从当前组件实例 (this) 上查找。
-         * 这允许你直接在渲染函数中使用像 someData 这样的变量，而不需要显式地写成 this.someData。
-         */
-        render: `with(this){return ${code}}`,
-    }
+    const state = new CodegenState(options);
+    const code = ast ? genElement(ast,state) : '_c("div")'
+    /**
+    * with(this) 语句的使用主要是为了确保组件实例的作用域内的属性和方法可以在生成的代码中直接访问，
+    * 当Vue编译模版时，它会生成一个渲染函数，这个函数需要能访问到组件实例上的数据、计算属性、方法等。
+    * 
+    * 使用 with(this) 语句可以创建一个作用域，其中所有的变量引用都会从当前组件实例 (this) 上查找。
+    * 这允许你直接在渲染函数中使用像 someData 这样的变量，而不需要显式地写成 this.someData。
+    */ 
+    return `with(this){return ${code}}`;
 }
 
-export function genElement(el){
+export function genElement(el,state){
     let code,tag,data;
     if(!tag) tag =`'${el.tag}'`
+
+    /**
+     * plain 属性用于标识一个元素节点是否被认为是“纯”的，即是否没有绑定任何动态特性。这个属性的值会在模板编译过程的不同阶段被计算和更新，以决定元素的编译策略。
+     * 
+     * plain的判断逻辑是：1.没有key 2.没有作用域插槽 3.没有属性 如果没有这三个 表示不用进行data的处理
+     */
+    if(!el.plain){
+        data = genData(el,state);
+    }
 
     const children = genChildren(el);
     code =`_c(${tag}${
@@ -75,4 +86,23 @@ function transformSpecialNewlines(text) {
      * 这样做的结果是，当你的字符串被其他代码解析时，解析器可以正确地识别出 \u2028 和 \u2029 作为需要进一步处理的转义序列，而不是作为普通文本中的特殊字符。
      */
     return text.replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029')
+}
+
+export function genData(el,state){
+    let data = '{'
+    /**
+     * 在给定的 genData 函数中，通过循环调用 state.dataGenFns 数组中的每一个函数，这些函数每个都会返回一个字符串，这个字符串可能代表了一部分数据定义。
+     * 这些部分被拼接起来形成一个更大的数据定义字符串。然而，在循环的过程中，每个返回的字符串后可能会自动添加逗号（,）以便于在拼接时方便地分隔每个部分。
+     * 
+     * {
+     *   "key1": "value1",
+     *   "key2": "value2",
+     *   "key3": "value3",
+    *  }
+     */
+    for (let i = 0; i < state.dataGenFns.length; i++) {
+        data += state.dataGenFns[i](el)
+    }
+    data = data.replace(/,$/, '') + '}'
+    return data
 }
