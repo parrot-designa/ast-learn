@@ -13,7 +13,7 @@ export function generate(
     * 使用 with(this) 语句可以创建一个作用域，其中所有的变量引用都会从当前组件实例 (this) 上查找。
     * 这允许你直接在渲染函数中使用像 someData 这样的变量，而不需要显式地写成 this.someData。
     */ 
-    return `with(this){return ${code}}`;
+    return code;
 }
 
 export function genElement(el,state){
@@ -133,6 +133,9 @@ export function genIfConditions(
         return '_e()'
     } 
     const condition = conditions.shift()
+    /**
+     * v-else 时 没有exp
+     */
     if(condition.exp){
         return `(${condition.exp})?${genTernaryExp(
             condition.block

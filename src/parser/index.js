@@ -43,6 +43,30 @@ export function parse(template,options){
 
         element = processElement(element, options)
 
+        /**
+         * !stack.length 检查的是 stack 是否为空，即当前没有打开的元素。如果 stack 为空，这意味着我们正在处理的是根元素或一个独立的元素，它不在任何其他元素的内部。
+         * 
+         * element !== root 则检查当前处理的元素是否不是根元素。根元素是整个模板的顶级元素，通常解析器会在开始解析模板时创建一个根元素。
+         * 
+         * 结合这两个条件，!stack.length && element !== root 表达式的含义是检查当前处理的元素是否是根元素以外的顶层元素，也就是说，它不在任何其他元素内部，同时它本身也不是根元素。
+         * 
+         * 在 Vue.js 的模板中，通常应该只有一个根元素，所有其他元素都应该嵌套在根元素内。这个条件判断是为了检查模板是否遵循了这个规则。如果这个条件为真，意味着我们遇到了一个不应该作为顶层元素存在的元素，这可能是因为模板结构有误，例如有多个根元素或元素结构不完整。
+         */
+        if(!stack.length && element !== root){
+            /**
+             * 当根元素（root）已经定义了一个条件表达式 (root.if) 并且当前元素是 v-else-if 或 v-else 时，addIfCondition 会被调用以添加新的条件分支到已存在的条件链上。
+             */
+            if(root.if && (element.elseif || element.else)){
+                addIfCondition(root, {
+                    exp: element.elseif,
+                    block: element
+                })
+            }else{
+                console.error("组件模板应当恰好包含一个根元素")
+            }
+            
+        }
+
         if(currentParent){
             currentParent.children.push(element)
             element.parent = currentParent
@@ -50,7 +74,7 @@ export function parse(template,options){
     }
 
     parseHTML(template, {
-        start(tag, attrs, unary){
+        start(tag, attrs, unary){ 
             let element = createASTElement(tag, attrs);
 
             if(inVPre){
@@ -79,6 +103,20 @@ export function parse(template,options){
             closeElement(element)
         },
         chars(text,start,end){
+            /**
+             * char函数的主要作用是决定如何将文本添加到当前组件的子节点列表中
+             * 如果没有当前组件 自然而然就是没用 即返回
+             * 
+             * 使用例子：
+             * let template = `
+             *       <div v-if="visible">222</div>
+             *       <div v-else>444</div>
+             * `;
+             * 上面例子中，解析完第一个div后，currentParent为undefined，再进行分割时，分割出空格或者其他字符 应该不进行处理
+             */
+            if(!currentParent){
+                return ;
+            }
             const children = currentParent.children;
             if(text){
                 let child,res;
@@ -143,6 +181,10 @@ export function processElement(element, options){
     return element;
 }
 
+/**
+ * 分别处理 v-if v-else v-else-if
+ * @param {*} el 
+ */
 function processIf(el) {
     const exp = getAndRemoveAttr(el, 'v-if')
     if (exp) {
@@ -151,6 +193,14 @@ function processIf(el) {
         exp: exp,
         block: el
       })
+    } else{
+        if(getAndRemoveAttr(el, 'v-else') != null){
+            el.else = true
+        }
+        const elseif = getAndRemoveAttr(el, 'v-else-if')
+        if (elseif) {
+            el.elseif = elseif
+        }
     }
 }
 /**
