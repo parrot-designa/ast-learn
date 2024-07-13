@@ -1,4 +1,5 @@
 import { CodegenState } from "../codegen";
+import { genProps } from "./attrs-props";
 
 export function generate(
     ast,
@@ -36,7 +37,7 @@ export function genElement(el,state){
         data = genData(el,state);
     }
 
-    const children = genChildren(el);
+    const children = genChildren(el,state);
     code =`_c(${tag}${
         data ? `,${data}`:''
     }${
@@ -46,19 +47,24 @@ export function genElement(el,state){
 }
 
 export function genChildren(
-    el
+    el,
+    state
 ){
     const children = el.children;
     if(children.length){
         const el = children[0];
 
-        return `[${children.map(c => genNode(c)).join(',')}]`
+        return `[${children.map(c => genNode(c,state)).join(',')}]`
     }
 }
 
 
-function genNode(node){
-    return genText(node);
+function genNode(node,state){
+    if(node.type === 1){
+        return genElement(node,state)
+    }else{
+        return genText(node);
+    } 
 }
 
 /**
@@ -110,7 +116,20 @@ export function genData(el,state){
     for (let i = 0; i < state.dataGenFns.length; i++) {
         data += state.dataGenFns[i](el)
     }
+    // 增加属性
+    if(el.attrs){
+        data += `attrs:${genProps(el.attrs)},`
+    }  
     data = data.replace(/,$/, '') + '}'
+
+    // 增加动态属性
+    if(el.dynamicAttrs){
+        /**
+         * _b：这个函数负责将一个对象的属性绑定到一个虚拟节点 (VNode) 的 data 对象上。
+         * _d: 它的目的是处理动态绑定的属性或指令参数
+         */
+        data = `_b(${data},"${el.tag}",${genProps(el.dynamicAttrs)})`
+    }
     return data
 }
 

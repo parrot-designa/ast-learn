@@ -1,6 +1,7 @@
 import { parseHTML } from "./html-parser";
 import { parseText } from "./text-parser";
 import { pluckModuleFunction,getAndRemoveAttr } from "../helpers";
+import { processAttrs } from "./attrs";
 
 let transforms
 
@@ -9,6 +10,10 @@ let transforms
  */
 export function parse(template,options){
     const stack = []
+    /**
+     * 是否保留空格
+     */
+    const preserveWhitespace = options.preserveWhitespace !== false;
     let root,
         /**
          * currentParent变量的作用是跟踪当前正在构建的DOM树中的父节点。
@@ -40,6 +45,7 @@ export function parse(template,options){
     transforms = pluckModuleFunction(options.modules, 'transformNode')
 
     function closeElement(element){
+        trimEndingWhitespace(element)
 
         element = processElement(element, options)
 
@@ -65,11 +71,15 @@ export function parse(template,options){
                 console.error("组件模板应当恰好包含一个根元素")
             }
             
-        }
+        } 
 
         if(currentParent){
-            currentParent.children.push(element)
-            element.parent = currentParent
+            if (element.elseif || element.else) {
+                processIfConditions(element, currentParent)
+            }else{
+                currentParent.children.push(element)
+                element.parent = currentParent
+            } 
         }
     }
 
@@ -93,6 +103,8 @@ export function parse(template,options){
             if(!unary){
                 currentParent = element;
                 stack.push(element);
+            }else{
+                closeElement(element);
             }
         },
         end(tag, start, end){
@@ -118,6 +130,15 @@ export function parse(template,options){
                 return ;
             }
             const children = currentParent.children;
+            // 判断文本不为空
+            if(text.trim()){
+
+            //  空文本节点 且 是处理的第一个子元素
+            } else if(!children.length){
+                text = '';
+            } else {
+                text = preserveWhitespace ? ' ' :'';
+            }
             if(text){
                 let child,res;
                 // 存在插值表达式
@@ -131,7 +152,18 @@ export function parse(template,options){
                 // 不存在插值表达式
                 }else if(
                     text !== ' ' ||
-                    !children.length
+                    !children.length ||
+                    /**
+                     * 用于检查当前正在处理的文本节点是否紧跟着一个非空格的文本节点
+                     * 
+                     * 1. 避免连续的空格节点
+                     *  Vue.js 试图减少最终生成的 VDOM 中不必要的空格节点，因为连续的空格在 HTML 渲染时会被浏览器合并为一个空格，从而可能导致不必要的内存消耗和渲染负担。
+                     *  通过这个判断，如果当前的文本节点是空格，且前一个文本节点也是空格，那么当前的空格节点就不会被添加到 children 数组中，从而避免了连续空格节点的产生。
+                     * 
+                     * 2.保持必要的空格
+                     * 但是，如果当前的文本节点是空格，但前一个文本节点不是空格（或者 children 数组为空，意味着这是第一个文本节点），那么这个空格节点会被保留，因为它可能对布局有影响，例如在文本之间添加必要的间距。
+                     */
+                    children[children.length - 1].text !== ' '
                 ){
                     child = {
                         type:3,
@@ -144,6 +176,36 @@ export function parse(template,options){
             }
         }
     });
+
+    /**
+     * 在前端开发中，去除最后的空白文本节点（通常指的是空格或换行符）主要是出于以下几点考虑：
+     * 1. 提高渲染效率
+     * 浏览器在解析HTML时会自动合并相邻的空白字符为单个空格。
+     * 这意味着，在大多数情况下，多个连续的空白字符实际上只会在页面上显示为一个空格，或者在某些情况下被完全忽略（例如在行内元素中，多余的空格可能不会显示）。
+     * 因此，去除多余的空白节点可以减少虚拟DOM树的复杂度，提高渲染速度和内存使用效率。
+     * 2. 简化DOM结构
+     * 减少不必要的空白文本节点可以使DOM树更加简洁，这有助于更高效地操作DOM，尤其是在大型应用中，频繁的DOM操作可能会成为性能瓶颈。
+     * 3. 保持一致性：
+     * 在Vue.js等框架中，保持DOM结构的一致性和预期的行为是很重要的。
+     * 例如，当动态更新DOM时，如果存在不必要的空白节点，可能会导致意外的布局变化或计算错误。
+     * 4. 避免样式问题：
+     * 在某些布局下，空白节点可能会影响元素的间距和对齐，特别是当涉及到CSS的white-space属性时。移除这些空白节点可以帮助避免潜在的样式问题。
+     * 5. 提升可读性：
+     * 对于开发人员来说，一个干净、没有多余空白的DOM结构更容易阅读和理解。
+     */
+    function trimEndingWhitespace(el) {
+        // remove trailing whitespace node
+        if (!inPre) {
+          let lastNode
+          while (
+            (lastNode = el.children[el.children.length - 1]) &&
+            lastNode.type === 3 &&
+            lastNode.text === ' '
+          ) {
+            el.children.pop()
+          }
+        }
+    }
 
     return root;
 }
@@ -178,6 +240,7 @@ export function processElement(element, options){
     for (let i = 0; i < transforms.length; i++) {
         element = transforms[i](element, options) || element
     }
+    processAttrs(element)
     return element;
 }
 
@@ -223,3 +286,27 @@ export function addIfCondition(el, condition){
     }
     el.ifConditions.push(condition)
 }
+
+function processIfConditions(el, parent) {
+    const prev = findPrevElement(parent.children)
+    if (prev && prev.if) {
+      addIfCondition(prev, {
+        exp: el.elseif,
+        block: el
+      })
+    } else {
+      console.error("在else 前面必须要有vif")
+    }
+}
+
+function findPrevElement(children){
+    let i = children.length
+    while (i--) {
+      if (children[i].type === 1) {
+        return children[i]
+      } else {
+        children.pop()
+      }
+    }
+}
+

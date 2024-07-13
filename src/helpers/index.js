@@ -43,3 +43,7 @@ export function getBindingAttr(
         return parseFilters(dynamicValue);
     }
 }
+
+export * from './attrs';
+export * from './reg';
+export * from './util';

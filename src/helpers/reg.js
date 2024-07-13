@@ -121,3 +121,36 @@ export const attribute =
  * 用来精确匹配一个完整的HTML结束标签，从</开始，然后是标签名（由qnameCapture定义），接着是可选的属性和空格，最后以>结束。
  */
 export const endTag = new RegExp(`^<\\/${qnameCapture}[^>]*>`)
+
+/**
+ * 用于识别Vue.js中的指令、事件监听器和绑定。这个表达式用于检测字符串是否以特定的前缀开始，这些前缀与Vue中的不同特性相关联。
+ * 
+ * 1. process.env.VBIND_PROP_SHORTHAND: 这个环境变量似乎用来判断是否启用了Vue的属性绑定（v-bind）的简写形式。当启用时，你可以用冒号 (:) 来代替 v-bind。例如，v-bind:href="url" 可以简写为 :href="url"。
+ * 2. ^v-|^@|^:|^\.|^#: 这是一个正则表达式的字面量形式。它包含一系列的备选项，每个选项都由 ^ 开始，意味着匹配字符串的开始位置。这里有几个不同的前缀：
+ *      - ^v-: 匹配任何以 v- 开头的指令，如 v-if, v-for, v-model 等。
+ *      - ^@: 匹配事件监听器，如 @click 或 @mouseover。
+ *      - ^:: 匹配属性绑定的简写，如 :class 或 :style。
+ *      - ^\.: 匹配修饰符，如 .stop 或 .prevent
+ *      - ^#: 匹配插槽引用，虽然在 Vue 3 中已被 # 模板引用语法取代 
+ */
+export const dirRE = /^v-|^@|^:|^\.|^#/ 
+
+/**
+ * 用于识别模板中用于属性绑定的指令和符号
+ * 1. 属性绑定 (:)：Vue.js 允许使用冒号 (:) 作为属性绑定的快捷方式，它等价于 v-bind。例如，:<attribute-name>="expression" 等同于 v-bind:<attribute-name>="expression"
+ * 2. 修饰符 (.)：Vue.js 支持在指令后面添加修饰符来改变指令的行为。例如，@click.prevent 会阻止点击事件的默认行为。
+ * 3. 完整的 v-bind 指令：有时，你需要在 v-bind 后面指定一个表达式，例如 v-bind="{ class: isActive }" 或 v-bind:style="dynamicStyle"。
+ */
+export const bindRE = /^:|^\.|^v-bind:/
+
+/**
+ * 用于识别模板中动态绑定的参数，这些参数通常被方括号 ([]) 包围。这种模式常见于 Vue 的动态组件和动态指令参数中。
+ * 
+ * 动态指令参数
+ * 在 Vue.js 中，你还可以使用动态参数来改变指令的行为。例如，动态地改变 v-bind 或 v-on 的参数。
+ * 
+ * <div :[dynamicKey]="value"></div>
+ * 
+ * 在这个例子中，dynamicKey 的值将被计算并在运行时决定绑定的属性名。如果 dynamicKey 的值是 "class"，那么这等同于 <div :class="value"></div>
+ */
+export const dynamicArgRE = /^\[.*\]$/
