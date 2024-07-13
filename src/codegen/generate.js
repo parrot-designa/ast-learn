@@ -1,5 +1,6 @@
 import { CodegenState } from "../codegen";
-import { genProps } from "./attrs-props";
+
+import { genData } from "./data";
 
 export function generate(
     ast,
@@ -73,12 +74,15 @@ function genNode(node,state){
  * 1. text.type === 2 判断 text 参数是否是一个 ASTExpression 类型的节点（在 Vue.js 的 AST 中，type 2 通常代表表达式节点）
  * 2. 如果 text.type 等于 2，则返回 text.expression，这意味着在 _v() 函数中直接使用表达式的值。由于表达式已经被包裹在 _s() 函数中（假设 _s() 是一个安全转换函数），所以不需要额外的括号。
  * 3. 如果 text.type 不等于 2，则意味着这是一个文本节点（ASTText）。在这种情况下，函数会调用 transformSpecialNewlines 并传递给它一个经过 JSON.stringify 转换的 text.text。
+ * 
+ * JSON.stringify(text.text) 的使用是为了确保文本内容能够被安全地转换为字符串，并且在最终的渲染函数中以字符串的形式插入到模板中。
+ * 如果你写了一个中文 eg:测试 在生成模版时，不会将其变成字符串。渲染时，会将其视为一个变量，进而报错
  */
 export function genText(text){
     return `_v(${
         text.type === 2 
             ? text.expression
-            : transformSpecialNewlines(text.text)
+            : transformSpecialNewlines(JSON.stringify(text.text))
     })`
 }
 
@@ -101,37 +105,6 @@ function transformSpecialNewlines(text) {
     return text.replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029')
 }
 
-export function genData(el,state){
-    let data = '{'
-    /**
-     * 在给定的 genData 函数中，通过循环调用 state.dataGenFns 数组中的每一个函数，这些函数每个都会返回一个字符串，这个字符串可能代表了一部分数据定义。
-     * 这些部分被拼接起来形成一个更大的数据定义字符串。然而，在循环的过程中，每个返回的字符串后可能会自动添加逗号（,）以便于在拼接时方便地分隔每个部分。
-     * 
-     * {
-     *   "key1": "value1",
-     *   "key2": "value2",
-     *   "key3": "value3",
-    *  }
-     */
-    for (let i = 0; i < state.dataGenFns.length; i++) {
-        data += state.dataGenFns[i](el)
-    }
-    // 增加属性
-    if(el.attrs){
-        data += `attrs:${genProps(el.attrs)},`
-    }  
-    data = data.replace(/,$/, '') + '}'
-
-    // 增加动态属性
-    if(el.dynamicAttrs){
-        /**
-         * _b：这个函数负责将一个对象的属性绑定到一个虚拟节点 (VNode) 的 data 对象上。
-         * _d: 它的目的是处理动态绑定的属性或指令参数
-         */
-        data = `_b(${data},"${el.tag}",${genProps(el.dynamicAttrs)})`
-    }
-    return data
-}
 
 export function genIf(
     el,

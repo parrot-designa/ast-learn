@@ -154,3 +154,11 @@ export const bindRE = /^:|^\.|^v-bind:/
  * 在这个例子中，dynamicKey 的值将被计算并在运行时决定绑定的属性名。如果 dynamicKey 的值是 "class"，那么这等同于 <div :class="value"></div>
  */
 export const dynamicArgRE = /^\[.*\]$/
+
+/**
+ * 匹配@ & v-on
+ */
+export const onRE = /^@|^v-on:/
+
+
+export const argRE = /:(.*)$/

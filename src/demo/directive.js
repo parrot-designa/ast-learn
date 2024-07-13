@@ -102,11 +102,27 @@
  * }
  * 
  * code = _c('img',_b({},\"img\",_d({},[dynamicKey,url])))
+ * 
+ * let template = `
+        <img 
+            :[dynamicKey]="url" 
+        />
+    `
+ */
+
+// =======================================  目前实现了vshow =============================================
+/**
+ *   
+ * ast = { 
+ *  directives:[
+ *   { name:'show',rawName:'v-show',isDynamicArg:false,value:visible}
+ *  ]
+ * }
+ * 
+ * code = _c('div',{directives:[{name:\"show\", rawName:\"v-show}\",value:(visible),expression:\"visible\"}]},[_v(\"测试\")])
+ * 
  */
 let template = `
-    <img 
-        :[dynamicKey]="url" 
-    />
+        <div  v-show="visible">测试</div>
 `
-
 export default template;
