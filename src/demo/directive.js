@@ -121,8 +121,26 @@
  * 
  * code = _c('div',{directives:[{name:\"show\", rawName:\"v-show}\",value:(visible),expression:\"visible\"}]},[_v(\"测试\")])
  * 
+ * let template = `
+            <div  v-show="visible">测试</div>
+    `
+ */
+
+// =======================================  目前实现了vtext =============================================
+/**
+ *   
+ * ast = { 
+ *  directives:[
+ *   { name:'show',rawName:'v-show',isDynamicArg:false,value:visible}
+ *  ]
+ * }
+ * 
+ * code = _c('div',{directives:[{name:\"show\", rawName:\"v-show}\",value:(visible),expression:\"visible\"}]},[_v(\"测试\")])
+ * 
+ * 
  */
 let template = `
-        <div  v-show="visible">测试</div>
+    <div v-show="visible">测试</div>
 `
+
 export default template;
