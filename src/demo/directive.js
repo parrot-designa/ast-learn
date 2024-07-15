@@ -1,5 +1,94 @@
-// 指令
- 
+// 指令 
+
+// =======================================  目前实现了元素的 vbind && : =============================================
+/**
+ * 目前实现了元素的 vbind:[dynamic] && :[dynamic]
+ * 
+ * ast = {
+ *  attrs:[
+ *      { name:'src',value:'url' }
+ *  ],
+ *  hasBindings:true
+ * }
+ *  
+ * code = _c('img',{attrs:{src:url}})
+ * 
+ */
+
+// =======================================  目前实现了绑定动态属性元素的 [] =============================================
+/**
+ * 目前实现了元素的 []
+ * 
+ * ast = {
+ *  dynamicAttrs:[
+ *   { name:'dynamicKey',value:'url',dynamic:true}
+ *  ]
+ * }
+ * 
+ * code = _c('img',_b({},\"img\",_d({},[dynamicKey,url])))
+ * 
+ * let template = `
+        <img 
+            :[dynamicKey]="url" 
+        />
+    `
+ */
+
+// =======================================  目前实现了vtext =============================================
+/**
+ *   
+ * ast = { 
+ *  directives:[
+ *   { name:'text',rawName:'v-text',isDynamicArg:false,value:url}
+ *  ],
+ *  props:[
+ *   { name:'textContent',value:'_s(url)'}
+ *  ]
+ * }
+ * // 由此可以看出来v-text就是textContent的语法糖
+ * _c('div',{domProps:{\"textContent\":_s(url)}},[_v(\"测试\")])
+ * 
+ * let template = `
+        <div v-text="url">测试</div>
+    `
+ */
+
+// =======================================  目前实现了vhtml=============================================
+/**
+ *   
+ * ast = { 
+ *  directives:[
+ *   { name:'html',rawName:'v-html',isDynamicArg:false,value:"'我是谁'"}
+ *  ],
+ *  props:[
+ *   { name:'innerHTML',value:'_s("我是谁")'}
+ *  ]
+ * }
+ * // 由此可以看出来v-text就是textContent的语法糖
+ * _c('div',{domProps:{\"innerHTML\":_s('我是谁')}},[_v(\"测试\")])
+ * 
+ * let template = `
+        <div v-html="'我是谁'">测试</div>
+    `
+ */
+
+// =======================================  目前实现了vshow =============================================
+/**
+ *   
+ * ast = { 
+ *  directives:[
+ *   { name:'show',rawName:'v-show',isDynamicArg:false,value:visible}
+ *  ]
+ * }
+ * 
+ * code = _c('div',{directives:[{name:\"show\", rawName:\"v-show}\",value:(visible),expression:\"visible\"}]},[_v(\"测试\")])
+ * 
+ * let template = `
+            <div  v-show="visible">测试</div>
+    `
+ */
+
+     
 // =======================================  目前实现了vif ==========================================================
 /** 目前实现了vif -> 核心 if 和 ifConditions
  * 
@@ -76,71 +165,35 @@
     `;
  */
 
-// =======================================  目前实现了元素的 vbind && : =============================================
+// =======================================  vfor  ============================================
 /**
- * 目前实现了元素的 vbind:[dynamic] && :[dynamic]
  * 
  * ast = {
- *  attrs:[
- *      { name:'src',value:'url' }
- *  ],
- *  hasBindings:true
- * }
- *  
- * code = _c('img',{attrs:{src:url}})
- * 
- */
-
-// =======================================  目前实现了绑定动态属性元素的 [] =============================================
-/**
- * 目前实现了元素的 []
- * 
- * ast = {
- *  dynamicAttrs:[
- *   { name:'dynamicKey',value:'url',dynamic:true}
+ *  plain: true,
+ *  children:[
+ *   {type:1,alias:'item',for:'list',plain:true,iterator1:'index',children:[{type:2,expression:'_s(item)',text:{{item}},tokens:[{{@binding:'item'}}]}] },
+ *   {type:3,text:''},
+ *   {type:1,children:[
+ *     {type:3,text:"11"}
+ *    ]
+ *   },
  *  ]
  * }
  * 
- * code = _c('img',_b({},\"img\",_d({},[dynamicKey,url])))
+ * code = "_c('div',[_l((list),function(item,index){return _c('div',[_v(_s(item))])}),_v(\" \"),_c('div',[_v(\"11\")])],2)"
  * 
  * let template = `
-        <img 
-            :[dynamicKey]="url" 
-        />
+    <div>
+        <div v-for="(item,index) in list">{{item}}</div>
+        <div>11</div>
+    </div>
     `
- */
-
-// =======================================  目前实现了vshow =============================================
-/**
- *   
- * ast = { 
- *  directives:[
- *   { name:'show',rawName:'v-show',isDynamicArg:false,value:visible}
- *  ]
- * }
- * 
- * code = _c('div',{directives:[{name:\"show\", rawName:\"v-show}\",value:(visible),expression:\"visible\"}]},[_v(\"测试\")])
- * 
- * let template = `
-            <div  v-show="visible">测试</div>
-    `
- */
-
-// =======================================  目前实现了vtext =============================================
-/**
- *   
- * ast = { 
- *  directives:[
- *   { name:'show',rawName:'v-show',isDynamicArg:false,value:visible}
- *  ]
- * }
- * 
- * code = _c('div',{directives:[{name:\"show\", rawName:\"v-show}\",value:(visible),expression:\"visible\"}]},[_v(\"测试\")])
- * 
- * 
  */
 let template = `
-    <div v-show="visible">测试</div>
+<div>
+    <div v-for="(item,index) in list">{{item}}</div>
+    <div>11</div>
+</div>
 `
 
 export default template;

@@ -5,11 +5,11 @@ import template from "./demo/directive";
 const { render } = compileToFunctions(template);
 
 new Vue({
-    template,
-    // render,
+    // template,
+    render,
     data(){
         return {
-            name:"Hello",
+            name:"吴家宝",
             key:"style",
             color:'red',
             fontSize:"28px",
@@ -18,7 +18,8 @@ new Vue({
             visible1:false,
             visible2:false,
             url:"https://marketplace.canva.cn/NsFNI/MADwRLNsFNI/1/thumbnail_large/canva-MADwRLNsFNI.jpg",
-            dynamicKey:"src"
+            dynamicKey:"src",
+            list:['🍎','🌰','🍌']
         }
     }
 }).$mount(document.getElementById('container'));

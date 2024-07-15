@@ -2,6 +2,7 @@ import { parseHTML } from "./html-parser";
 import { parseText } from "./text-parser";
 import { pluckModuleFunction,getAndRemoveAttr } from "../helpers";
 import { processAttrs } from "./attrs";
+import { processIf,processFor } from "./directive";
 
 let transforms
 
@@ -90,6 +91,7 @@ export function parse(template,options){
             if(inVPre){
 
             }else{
+                processFor(element);
                 processIf(element);
             }
 
@@ -237,6 +239,10 @@ export function createASTElement(
 }
 
 export function processElement(element, options){
+
+    element.plain =
+        !element.key && !element.scopedSlots && !element.attrsList.length
+        
     for (let i = 0; i < transforms.length; i++) {
         element = transforms[i](element, options) || element
     }
@@ -244,28 +250,7 @@ export function processElement(element, options){
     return element;
 }
 
-/**
- * 分别处理 v-if v-else v-else-if
- * @param {*} el 
- */
-function processIf(el) {
-    const exp = getAndRemoveAttr(el, 'v-if')
-    if (exp) {
-      el.if = exp
-      addIfCondition(el, {
-        exp: exp,
-        block: el
-      })
-    } else{
-        if(getAndRemoveAttr(el, 'v-else') != null){
-            el.else = true
-        }
-        const elseif = getAndRemoveAttr(el, 'v-else-if')
-        if (elseif) {
-            el.elseif = elseif
-        }
-    }
-}
+
 /**
  *  函数的目的是向给定的元素 el 添加一个条件表达式 condition，这些条件表达式会被存储在 el 的 ifConditions 属性中，该属性是一个数组，用于保存所有附加的条件。
  *  ifConditions 主要是在编译阶段处理嵌套的 v-if 和 v-else 以及 v-else-if 指令时使用的一个数据结构。

@@ -1,6 +1,7 @@
 import { genProps } from "./attrs-props";
 import { genDirectives } from "./directive";
 
+
 export function genData(el,state){
     let data = '{'
     /**
@@ -22,6 +23,10 @@ export function genData(el,state){
     if(el.attrs){
         data += `attrs:${genProps(el.attrs)},`
     }  
+    // dom 原生属性
+    if(el.props){
+        data += `domProps:${genProps(el.props)}`
+    }
     data = data.replace(/,$/, '') + '}'
 
     // 增加动态属性

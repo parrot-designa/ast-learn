@@ -1,9 +1,3 @@
-import { pluckModuleFunction } from "../helpers"
+import { generate } from './generate';
 
-export class CodegenState {
-    dataGenFns
-
-    constructor(options){
-        this.dataGenFns = pluckModuleFunction(options.modules, 'genData')
-    }
-}
+export default generate
