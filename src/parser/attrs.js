@@ -1,7 +1,19 @@
-import { dirRE, addAttr, bindRE, dynamicArgRE, argRE } from "../helpers";
+import { dirRE, addAttr, bindRE, dynamicArgRE, argRE,onRE,modifierRE } from "../helpers";
 import { parseFilters } from "../parser/filter-parse";
 import { addDirective } from "./directive";
+import { addHandler } from "./events";
 
+function parseModifiers(name){
+    const match = name.match(modifierRE)
+    if (match) {
+      const ret = {}
+      match.forEach(m => {
+        ret[m.slice(1)] = true
+      })
+      return ret
+    }
+}
+ 
 /**
  * 给ast上增加attr属性
  * 
@@ -13,7 +25,7 @@ export function processAttrs(
     el
 ){
     const list = el.attrsList;
-    let i,l,name,rawName,value,isDynamic;
+    let i,l,name,rawName,value,isDynamic,modifiers;
     for(i = 0,l = list.length; i < l; i++){
         name = rawName = list[i].name;
         value = list[i].value
@@ -21,6 +33,12 @@ export function processAttrs(
         // 匹配到指令
         if(dirRE.test(name)){
             el.hasBindings = true;
+
+            modifiers = parseModifiers(name.replace(dirRE, ''))
+
+            if(modifiers){
+                name = name.replace(modifierRE,'')
+            }
 
             // 匹配到bind
             if(bindRE.test(name)){
@@ -32,6 +50,13 @@ export function processAttrs(
                     name = name.slice(1, -1)
                 }
                 addAttr(el, name, value, list[i], isDynamic)
+            }else if(onRE.test(name)){
+                name = name.replace(onRE, '')
+                isDynamic = dynamicArgRE.test(name)
+                if (isDynamic) {
+                    name = name.slice(1, -1)
+                }
+                addHandler(el, name, value,modifiers, isDynamic)
             }else{
                 name = name.replace(dirRE, '')
                 /**

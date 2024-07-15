@@ -5,7 +5,7 @@ import template from "./demo/directive";
 const { render } = compileToFunctions(template);
 
 new Vue({
-    // template,
+    //template,
     render,
     data(){
         return {
@@ -20,6 +20,11 @@ new Vue({
             url:"https://marketplace.canva.cn/NsFNI/MADwRLNsFNI/1/thumbnail_large/canva-MADwRLNsFNI.jpg",
             dynamicKey:"src",
             list:['🍎','🌰','🍌']
+        }
+    },
+    methods:{
+        handleClick:function(event){
+            console.log("点击",event)
         }
     }
 }).$mount(document.getElementById('container'));

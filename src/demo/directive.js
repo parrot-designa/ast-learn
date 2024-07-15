@@ -218,11 +218,10 @@
     </div>
     `
  */
+
+// =======================================  von  ============================================
 let template = `
-<div>
-    <div v-for="(item,index) in list" v-if="index == 1">{{item}}</div>
-    <div>11</div>
-</div>
+    <button @click="handleClick(false)">点击</button>
 `
 
 export default template;

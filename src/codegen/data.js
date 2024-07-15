@@ -1,5 +1,6 @@
 import { genProps } from "./attrs-props";
 import { genDirectives } from "./directive";
+import { genHandlers } from "./events";
 
 
 export function genData(el,state){
@@ -26,6 +27,10 @@ export function genData(el,state){
     // dom 原生属性
     if(el.props){
         data += `domProps:${genProps(el.props)}`
+    }
+    // 事件监听
+    if (el.events) {
+        data += `${genHandlers(el.events, false)},`
     }
     data = data.replace(/,$/, '') + '}'
 

@@ -60,3 +60,6 @@ export function findPrevElement(children){
     }
   }
 }
+
+
+export const emptyObject = Object.freeze({})
