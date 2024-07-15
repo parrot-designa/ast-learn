@@ -48,3 +48,15 @@ export function extend(
   }
   return to
 }
+
+
+export function findPrevElement(children){
+  let i = children.length
+  while (i--) {
+    if (children[i].type === 1) {
+      return children[i]
+    } else {
+      children.pop()
+    }
+  }
+}

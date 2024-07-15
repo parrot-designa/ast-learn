@@ -184,14 +184,43 @@
  * 
  * let template = `
     <div>
-        <div v-for="(item,index) in list">{{item}}</div>
+        <div v-for="(item,index) in list">{{item}} </div>
+        <div>11</div>
+    </div>
+    `
+ */
+
+// =======================================  vfor 优先级高于vif  ============================================
+/**
+ * 
+ * ast = {
+ *  children:[
+ *   {alias:'item',children:[
+ *     {expression:"_s(item)+\" \"+_s(index)",text:"{{item}} {{index}}",type:2,tokens:[{@binding: 'item'}," ",{@binding:"index"}]}
+ *    ],
+ *    for:"list",
+ *    if:"index == 1",
+ *    ifConditions:[{
+ *     {exp:"index == 1",block:当前ast}
+ *    }],
+ *    iterator1:"index"
+ *   }
+ *  ]
+ * }
+ * 
+ * 在生成code时先生成_l 再生成三元表达式
+ * code = _c('div',[_l((list),function(item,index){return (index == 1)?_c('div',[_v(_s(item)+\" \"+_s(index))]):_e()}),_v(\" \"),_c('div',[_v(\"11\")])],2)
+ * 
+ * let template = `
+    <div>
+        <div v-for="(item,index) in list" v-if="index == 1">{{item}}</div>
         <div>11</div>
     </div>
     `
  */
 let template = `
 <div>
-    <div v-for="(item,index) in list">{{item}}</div>
+    <div v-for="(item,index) in list" v-if="index == 1">{{item}}</div>
     <div>11</div>
 </div>
 `

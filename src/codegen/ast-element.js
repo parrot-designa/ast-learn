@@ -8,12 +8,11 @@ export function genElement(el,state){
     /**
      * ifProcessed 这个属性的作用是用来标记一个元素是否已经被处理过 v-if 或类似条件渲染指令
      */
-    if(el.if && !el.ifProcessed){
-        return genIf(el, state)
-    } else if(el.for && !el.forProcessed){
+    if(el.for && !el.forProcessed){
         return genFor(el, state)
-    }
-
+    } else if(el.if && !el.ifProcessed){
+        return genIf(el, state)
+    } 
     /**
      * plain 属性用于标识一个元素节点是否被认为是“纯”的，即是否没有绑定任何动态特性。这个属性的值会在模板编译过程的不同阶段被计算和更新，以决定元素的编译策略。
      * 

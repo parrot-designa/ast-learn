@@ -39,12 +39,11 @@ export function parseText(
         tokens.push(`_s(${exp})`)
         rawTokens.push({ '@binding': exp })
         lastIndex = index + match[0].length;
-
-        if(lastIndex < text.length){
-            rawTokens.push((tokenValue = text.slice(lastIndex)))
-            tokens.push(JSON.stringify(tokenValue))
-        } 
-    }
+    } 
+    if(lastIndex < text.length){
+        rawTokens.push((tokenValue = text.slice(lastIndex)))
+        tokens.push(JSON.stringify(tokenValue))
+    } 
     return {
         expression: tokens.join('+'),
         tokens:rawTokens
