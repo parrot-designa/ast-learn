@@ -1,39 +1,5 @@
 // 指令 
 
-// =======================================  目前实现了元素的 vbind && : =============================================
-/**
- * 目前实现了元素的 vbind:[dynamic] && :[dynamic]
- * 
- * ast = {
- *  attrs:[
- *      { name:'src',value:'url' }
- *  ],
- *  hasBindings:true
- * }
- *  
- * code = _c('img',{attrs:{src:url}})
- * 
- */
-
-// =======================================  目前实现了绑定动态属性元素的 [] =============================================
-/**
- * 目前实现了元素的 []
- * 
- * ast = {
- *  dynamicAttrs:[
- *   { name:'dynamicKey',value:'url',dynamic:true}
- *  ]
- * }
- * 
- * code = _c('img',_b({},\"img\",_d({},[dynamicKey,url])))
- * 
- * let template = `
-        <img 
-            :[dynamicKey]="url" 
-        />
-    `
- */
-
 // =======================================  目前实现了vtext =============================================
 /**
  *   
@@ -220,8 +186,58 @@
  */
 
 // =======================================  von  ============================================
+/**
+ * 
+ * ast = {
+ *  events:{
+ *   click:{
+ *    value:"handleClick(false)"
+ *   }
+ *  }
+ * }
+ * 
+ * code = _c('button',{on:{\"click\":function($event){return handleClick(false)}}},[_v(\"点击\")])
+ */
+
+
+// =======================================  目前实现了元素的 vbind && : =============================================
+/**
+ * 目前实现了元素的 vbind:[dynamic] && :[dynamic]
+ * 
+ * ast = {
+ *  attrs:[
+ *      { name:'src',value:'url' }
+ *  ],
+ *  hasBindings:true
+ * }
+ *  
+ * code = _c('img',{attrs:{src:url}})
+ * 
+ */
+
+// =======================================  目前实现了绑定动态属性元素的 [] =============================================
+/**
+ * 目前实现了元素的 []
+ * 
+ * ast = {
+ *  dynamicAttrs:[
+ *   { name:'dynamicKey',value:'url',dynamic:true}
+ *  ]
+ * }
+ * 
+ * code = _c('img',_b({},\"img\",_d({},[dynamicKey,url])))
+ * 
+ * let template = `
+        <img 
+            :[dynamicKey]="url" 
+        />
+    `
+ */
+   
+// =======================================  vmodel 实现input  ============================================
+
 let template = `
-    <button @click="handleClick(false)">点击</button>
+    <input v-model="name" />
 `
 
 export default template;

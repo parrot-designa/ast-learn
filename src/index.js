@@ -5,8 +5,8 @@ import template from "./demo/directive";
 const { render } = compileToFunctions(template);
 
 new Vue({
-    //template,
-    render,
+    template,
+    // render,
     data(){
         return {
             name:"吴家宝",
