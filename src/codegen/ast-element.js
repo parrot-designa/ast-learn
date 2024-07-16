@@ -20,7 +20,7 @@ export function genElement(el,state){
      */
     if(!el.plain){
         data = genData(el,state);
-    }
+    }  
     const children = genChildren(el,state,true);
     code =`_c(${tag}${
         data ? `,${data}`:''

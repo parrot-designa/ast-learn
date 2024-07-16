@@ -15,6 +15,7 @@ export function genData(el,state){
      *   "key3": "value3",
     *  }
      */
+    // 添加指令
     const dirs = genDirectives(el, state)
     if(dirs) data += dirs + ','
     for (let i = 0; i < state.dataGenFns.length; i++) {

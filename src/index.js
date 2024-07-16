@@ -19,7 +19,10 @@ new Vue({
             visible2:false,
             url:"https://marketplace.canva.cn/NsFNI/MADwRLNsFNI/1/thumbnail_large/canva-MADwRLNsFNI.jpg",
             dynamicKey:"src",
-            list:['🍎','🌰','🍌']
+            list:['🍎','🌰','🍌'],
+            fruits:['苹果','香蕉'],
+            fruit:"苹果",
+            selectValue:2
         }
     },
     methods:{

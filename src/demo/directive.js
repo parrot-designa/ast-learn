@@ -234,12 +234,12 @@
     `
  */
    
-// =======================================  vmodel 实现input  ============================================
+// =======================================  vmodel 实现input/textarea  ============================================
 /**
  * 
  * ast = {
  *  directives:[{name:'model',rawName:'v-model',value:'name'}],
- *  events:{input:{if($event.target.composing)return;name=$event.target.value}},
+ *  events:{input:{value:"if($event.target.composing)return;name=$event.target.value"}},
  *  props:[{name:'value',value:'(name)'}]
  * }
  * 
@@ -248,10 +248,97 @@
  * let template = `
         <input v-model="name" />
     `
+ */ 
+
+// =======================================  vmodel 实现select  ============================================
+/**
+ * 
+ * ast = {
+ *  directives:[{name:'model',rawName:'v-model',value:'selectValue'}],
+ *  events:{change:{value:"var $$selectedVal = Array.prototype.filter.call($event.target.options,function(o){return o.selected}).map(function(o){var val = "_value" in o ? o._value : o.value;return val}); selectValue=$event.target.multiple ? $$selectedVal : $$selectedVal[0]"}},
+ * }
+ * 
+ * code = _c('select',{directives:[{name:"model", rawName:"v-model",value:(selectValue),expression:"selectValue"}],on:{"change":function($event){var $$selectedVal = Array.prototype.filter.call($event.target.options,function(o){return o.selected}).map(function(o){var val = "_value" in o ? o._value : o.value;return val}); selectValue=$event.target.multiple ? $$selectedVal : $$selectedVal[0]}}},[_c('option',{attrs:{"value":"1"}},[_v("1")]),_v(" "),_c('option',{attrs:{"value":"2"}},[_v("2")])])
+ * 
+    let template = `
+        <select v-model="selectValue">
+            <option value="1">1</option>
+            <option value="2">2</option>
+        </select>
+    `
+ */ 
+
+// =======================================  vmodel 实现checkbox  ============================================
+/**
+ * 
+ * ast = {
+ *  children:[
+ *   {
+ *    directives:[
+ *     {name:"model",rawName:"v-model",value:"fruits"}
+ *    ],
+ *    events:[
+ *     {change:{value:"var $$a=fruits,$$el=$event.target,$$c=$$el.checked?(true):(false);if(Array.isArray($$a)){var $$v="苹果",$$i=_i($$a,$$v);if($$el.checked){$$i<0&&(fruits=$$a.concat([$$v]))}else{$$i>-1&&(fruits=$$a.slice(0,$$i).concat($$a.slice($$i+1)))}}else{fruits=$$c}"}}
+ *    ],
+ *    props:[
+ *     {name:"checked",value:"Array.isArray(fruits)?_i(fruits,"苹果")>-1:(fruits)"}
+ *    ]
+ *   }
+ *  ]
+ * }
+ * 
+ * code = "_c('div',[_c('input',{directives:[{name:"model", rawName:"v-model",value:(fruits),expression:"fruits"}],attrs:{"type":"checkbox","id":"apple","value":"苹果"},domProps:{"checked":Array.isArray(fruits)?_i(fruits,"苹果")>-1:(fruits)},on:{"change":function($event){var $$a=fruits,$$el=$event.target,$$c=$$el.checked?(true):(false);if(Array.isArray($$a)){var $$v="苹果",$$i=_i($$a,$$v);if($$el.checked){$$i<0&&(fruits=$$a.concat([$$v]))}else{$$i>-1&&(fruits=$$a.slice(0,$$i).concat($$a.slice($$i+1)))}}else{fruits=$$c}}}}),_v(" "),_c('label',{attrs:{"for":"apple"}},[_v("苹果")]),_c('br'),_v(" "),_c('input',{directives:[{name:"model", rawName:"v-model",value:(fruits),expression:"fruits"}],attrs:{"type":"checkbox","id":"banana","value":"香蕉"},domProps:{"checked":Array.isArray(fruits)?_i(fruits,"香蕉")>-1:(fruits)},on:{"change":function($event){var $$a=fruits,$$el=$event.target,$$c=$$el.checked?(true):(false);if(Array.isArray($$a)){var $$v="香蕉",$$i=_i($$a,$$v);if($$el.checked){$$i<0&&(fruits=$$a.concat([$$v]))}else{$$i>-1&&(fruits=$$a.slice(0,$$i).concat($$a.slice($$i+1)))}}else{fruits=$$c}}}}),_v(" "),_c('label',{attrs:{"for":"banana"}},[_v("香蕉")]),_c('br')])"
+ * 
+ * let template = `
+    <div>
+        <input type="checkbox" id="apple" value="苹果" v-model="fruits">
+        <label for="apple">苹果</label><br>
+        <input type="checkbox" id="banana" value="香蕉" v-model="fruits">
+        <label for="banana">香蕉</label><br>
+    </div>
+`
  */
 
+// =======================================  vmodel 实现radio  ============================================
+/**
+ * 
+ * ast = {
+ *  children:[
+ *   {
+ *    directives:[
+ *     {name:"model",rawName:"v-model",value:"fruit"}
+ *    ],
+ *    events:{
+ *     change:{
+ *      value:"fruit=\"苹果\""
+ *     }
+ *    },
+ *    props:[
+ *     {name:"checked",value:"_q(fruit,\"苹果\")"} 
+ *    ]
+ *   }
+ *  ]
+ * }
+ * 
+ * code = _c('div',[_c('input',{directives:[{name:"model", rawName:"v-model",value:(fruit),expression:"fruit"}],attrs:{"type":"radio","id":"apple","value":"苹果"},domProps:{"checked":_q(fruit,"苹果")},on:{"change":function($event){fruit="苹果"}}}),_v(" "),_c('label',{attrs:{"for":"apple"}},[_v("苹果")]),_c('br'),_v(" "),_c('input',{directives:[{name:"model", rawName:"v-model",value:(fruit),expression:"fruit"}],attrs:{"type":"radio","id":"banana","value":"香蕉"},domProps:{"checked":_q(fruit,"香蕉")},on:{"change":function($event){fruit="香蕉"}}}),_v(" "),_c('label',{attrs:{"for":"banana"}},[_v("香蕉")]),_c('br')])
+ * 
+ * let template = `
+        <div>
+            <input type="radio" id="apple" value="苹果" v-model="fruit">
+            <label for="apple">苹果</label><br>
+            <input type="radio" id="banana" value="香蕉" v-model="fruit">
+            <label for="banana">香蕉</label><br>
+        </div>
+    `
+ * 
+ */
 let template = `
-    <input v-model="name" />
+    <div>
+        <input type="radio" id="apple" value="苹果" v-model="fruit">
+        <label for="apple">苹果</label><br>
+        <input type="radio" id="banana" value="香蕉" v-model="fruit">
+        <label for="banana">香蕉</label><br>
+    </div>
 `
 
 export default template;

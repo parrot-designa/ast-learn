@@ -1,5 +1,6 @@
 import { addProp } from "../parser/props";
 import { addHandler } from "../parser/events";
+import { getBindingAttr } from "../helpers";
 
 export default function model(
     el,
@@ -7,9 +8,16 @@ export default function model(
 ){
     const tag = el.tag;
     const value = dir.value;
+    const type = el.attrsMap.type
 
-    if(tag === 'input' || tag === 'textarea'){
-      genDefaultModel(el, value)
+    if(tag === 'select'){
+      genSelect(el, value);
+    } else if (tag === 'input' && type === 'checkbox') {
+      genCheckboxModel(el, value);
+    } else if (tag === 'input' && type === 'radio') {
+      genRadioModel(el,value);
+    } else if (tag === 'input' || tag === 'textarea'){
+      genDefaultModel(el, value);
     }
     return true;
 }
@@ -37,6 +45,22 @@ function genDefaultModel(
 
     addProp(el, 'value', `(${value})`)
     addHandler(el, event, code, null)
+}
+
+function genSelect(
+  el,
+  value
+) { 
+  const selectedVal =
+    `Array.prototype.filter` +
+    `.call($event.target.options,function(o){return o.selected})` +
+    `.map(function(o){var val = "_value" in o ? o._value : o.value;` +
+    `return val})`
+
+  const assignment = '$event.target.multiple ? $$selectedVal : $$selectedVal[0]'
+  let code = `var $$selectedVal = ${selectedVal};`
+  code = `${code} ${genAssignmentCode(value, assignment)}`
+  addHandler(el, 'change', code, null)
 }
 
 export function genAssignmentCode(value, assignment){
@@ -157,3 +181,50 @@ function parseBracket(chr) {
     }
 }
   
+function genCheckboxModel(
+  el,
+  value
+) { 
+  const valueBinding = getBindingAttr(el, 'value') || 'null'
+  const trueValueBinding = getBindingAttr(el, 'true-value') || 'true'
+  const falseValueBinding = getBindingAttr(el, 'false-value') || 'false'
+  addProp(
+    el,
+    'checked',
+    `Array.isArray(${value})` +
+      `?_i(${value},${valueBinding})>-1` +
+      (trueValueBinding === 'true'
+        ? `:(${value})`
+        : `:_q(${value},${trueValueBinding})`)
+  )
+  addHandler(
+    el,
+    'change',
+    `var $$a=${value},` +
+      '$$el=$event.target,' +
+      `$$c=$$el.checked?(${trueValueBinding}):(${falseValueBinding});` +
+      'if(Array.isArray($$a)){' +
+      `var $$v=${valueBinding},` +
+      '$$i=_i($$a,$$v);' +
+      `if($$el.checked){$$i<0&&(${genAssignmentCode(
+        value,
+        '$$a.concat([$$v])'
+      )})}` +
+      `else{$$i>-1&&(${genAssignmentCode(
+        value,
+        '$$a.slice(0,$$i).concat($$a.slice($$i+1))'
+      )})}` +
+      `}else{${genAssignmentCode(value, '$$c')}}`,
+    null
+  )
+}
+
+function genRadioModel(
+  el,
+  value
+) {
+  let valueBinding = getBindingAttr(el, 'value') || 'null'
+  valueBinding = valueBinding
+  addProp(el, 'checked', `_q(${value},${valueBinding})`)
+  addHandler(el, 'change', genAssignmentCode(value, valueBinding), null, true)
+}

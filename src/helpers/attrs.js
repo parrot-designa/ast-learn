@@ -1,3 +1,6 @@
+import { getAndRemoveAttr } from "./index";
+import { parseFilters } from "../parser/filter-parse";
+
 export function addAttr(
     el,
     name,
@@ -12,3 +15,4 @@ export function addAttr(
     // 一旦存在属性 就是不纯的
     el.plain = false;
 }
+ 

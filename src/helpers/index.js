@@ -31,16 +31,23 @@ export function getAndRemoveAttr(
 }
 
 /**
- *  从一个元素 (el) 上获取特定绑定属性的值
+ *  从一个元素 (el) 上获取特定绑定属性的值 getStatic 可以获取非bind的值
  */
 export function getBindingAttr(
     el,
-    name
+    name,
+    // 获取普通的值
+    getStatic
 ){
     const dynamicValue =
         getAndRemoveAttr(el, ':' + name) || getAndRemoveAttr(el, 'v-bind:' + name);
     if(dynamicValue != null){
         return parseFilters(dynamicValue);
+    }else if(getStatic !== false){
+        const staticValue = getAndRemoveAttr(el, name)
+        if (staticValue != null) {
+            return JSON.stringify(staticValue)
+        }
     }
 }
 

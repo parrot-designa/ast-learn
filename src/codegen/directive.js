@@ -23,7 +23,7 @@ export function genDirectives(
 
         if(needRuntime){
             hasRuntime = true
-            res += `{name:"${dir.name}", rawName:"${dir.rawName}}"${
+            res += `{name:"${dir.name}", rawName:"${dir.rawName}"${
                 dir.value
                     ? `,value:(${dir.value}),expression:${JSON.stringify(dir.value)}`
                     : ''
