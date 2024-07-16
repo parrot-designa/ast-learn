@@ -1,8 +1,8 @@
 import { parseHTML } from "./html-parser";
 import { parseText } from "./text-parser";
 import { pluckModuleFunction } from "../helpers";
-import { processAttrs } from "./attrs";
-import { processIf,processFor,processIfConditions } from "./directive";
+import { processAttrs,processRawAttrs } from "./attrs";
+import { processIf,processFor,processIfConditions,processPre } from "./directive";
 
 let transforms
 
@@ -48,7 +48,12 @@ export function parse(template,options){
     function closeElement(element){
         trimEndingWhitespace(element)
 
-        element = processElement(element, options)
+        /**
+         * 如果在v-pre中 不需要进行属性的一系列处理
+         */
+        if(!inVPre){
+            element = processElement(element, options)
+        }
 
         /**
          * !stack.length 检查的是 stack 是否为空，即当前没有打开的元素。如果 stack 为空，这意味着我们正在处理的是根元素或一个独立的元素，它不在任何其他元素的内部。
@@ -82,15 +87,31 @@ export function parse(template,options){
                 element.parent = currentParent
             } 
         }
+
+        if (element.pre) {
+            inVPre = false
+        }
     }
 
     parseHTML(template, {
         start(tag, attrs, unary){ 
             let element = createASTElement(tag, attrs);
 
-            if(inVPre){
+            /**
+             * 如果存在v-pre设置inVPre为true
+             */
+            if(!inVPre){
+                processPre(element)
+                if (element.pre) {
+                    inVPre = true
+                }
+            }
 
+            // 如果是在v-pre下 不需要处理指令 所有指令都属于属性
+            if(inVPre){
+                processRawAttrs(element);
             }else{
+            // 不是在v-pre下 所以需要先进行指令的处理
                 processFor(element);
                 processIf(element);
             }

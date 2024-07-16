@@ -1,6 +1,3 @@
-import { getAndRemoveAttr } from "./index";
-import { parseFilters } from "../parser/filter-parse";
-
 export function addAttr(
     el,
     name,

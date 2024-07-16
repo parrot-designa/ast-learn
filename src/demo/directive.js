@@ -332,13 +332,10 @@
     `
  * 
  */
+
+// =======================================  vpre  ============================================
 let template = `
-    <div>
-        <input type="radio" id="apple" value="苹果" v-model="fruit">
-        <label for="apple">苹果</label><br>
-        <input type="radio" id="banana" value="香蕉" v-model="fruit">
-        <label for="banana">香蕉</label><br>
-    </div>
+    <span v-pre v-if="false">{{ this will not be compiled }}</span>
 `
 
 export default template;
