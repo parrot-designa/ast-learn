@@ -9,10 +9,11 @@ function compileToFunctions(template){
      * 这可能会影响到页面布局或元素间的间距。
      */
     const ast = parse(template.trim(),options); 
-    const code = generate(ast,options); 
+    const { code,state } = generate(ast,options); 
     debugger;
     return {
-        render: new Function(`with(this){return ${code}}`)
+        render: new Function(`with(this){return ${code}}`),
+        staticRenderFns: state.staticRenderFns.map(item => new Function(item))
     }
 } 
 

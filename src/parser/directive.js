@@ -113,3 +113,9 @@ export function processPre(el) {
     el.pre = true
   }
 }
+export function processOnce(el){
+  const once = getAndRemoveAttr(el, 'v-once')
+  if (once != null) {
+    el.once = true
+  }
+}

@@ -84,3 +84,21 @@ export function genFor(el,state){
         '})'
     )
 }
+
+export function genOnce(el, state) {
+    el.onceProcessed = true
+    if (el.if && !el.ifProcessed) {
+        return genIf(el, state)
+    }else{
+        return genStatic(el,state)
+    }
+}
+
+function genStatic(el, state) {
+    el.staticProcessed = true
+    // Some elements (templates) need to behave differently inside of a v-pre
+    // node.  All pre nodes are static roots, so we can use this as a location to
+    // wrap a state change and reset it upon exiting the pre node. 
+    state.staticRenderFns.push(`with(this){return ${genElement(el, state)}}`)
+    return `_m(${state.staticRenderFns.length - 1})`
+}

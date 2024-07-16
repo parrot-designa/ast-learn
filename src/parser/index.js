@@ -2,7 +2,7 @@ import { parseHTML } from "./html-parser";
 import { parseText } from "./text-parser";
 import { pluckModuleFunction } from "../helpers";
 import { processAttrs,processRawAttrs } from "./attrs";
-import { processIf,processFor,processIfConditions,processPre } from "./directive";
+import { processIf,processFor,processIfConditions,processPre,processOnce } from "./directive";
 
 let transforms
 
@@ -114,6 +114,7 @@ export function parse(template,options){
             // 不是在v-pre下 所以需要先进行指令的处理
                 processFor(element);
                 processIf(element);
+                processOnce(element);
             }
 
             if(!root){

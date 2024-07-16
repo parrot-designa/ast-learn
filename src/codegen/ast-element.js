@@ -1,5 +1,5 @@
-import {  genIf,genFor } from './directive';
-import {  genData } from './data';
+import { genIf,genFor,genOnce } from './directive';
+import { genData } from './data';
 
 export function genElement(el,state){
     let code,tag,data;
@@ -8,7 +8,9 @@ export function genElement(el,state){
     /**
      * ifProcessed 这个属性的作用是用来标记一个元素是否已经被处理过 v-if 或类似条件渲染指令
      */
-    if(el.for && !el.forProcessed){
+    if(el.once && !el.onceProcessed){
+        return genOnce(el, state)
+    } else if(el.for && !el.forProcessed){
         return genFor(el, state)
     } else if(el.if && !el.ifProcessed){
         return genIf(el, state)

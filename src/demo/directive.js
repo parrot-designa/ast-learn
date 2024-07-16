@@ -334,8 +334,48 @@
  */
 
 // =======================================  vpre  ============================================
+/**
+ * 
+ * ast = {
+ *  children:[
+ *   {type:3,text:"{{ this will not be compiled }}"}
+ *  ]
+ * }
+ * 
+ * code="_c('span',{attrs:{"v-if":"false"}},[_v("{{ this will not be compiled }}")])"
+ * 
+ * let template = `
+        <span v-pre v-if="false">{{ this will not be compiled }}</span>
+    `
+ */
+
+// =======================================  vonce  ============================================
+/**
+ * 
+ * ast = {
+ *  children:[
+ *   {once:true}
+ *  ]
+ * }
+ * 
+ * code = "_c('div',[_m(0),_v(\" \"),_c('button',{on:{\"click\":function($event){name = name+='1'}}},[_v(\"修改name\")])])"
+ * 
+ * staticRenderFns = ["with(this){return _c('span',[_v(_s(name))])}"]
+ * 
+ * let template = `
+    <div>
+        <span v-once>{{ name }}</span>
+        <button @click="name = name+='1'">修改name</button>
+    </div>
+    `
+ * 
+ */
+
 let template = `
-    <span v-pre v-if="false">{{ this will not be compiled }}</span>
+<div>
+    <span v-once>{{ name }}</span>
+    <button @click="name = name+='1'">修改name</button>
+</div>
 `
 
 export default template;

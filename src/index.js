@@ -2,11 +2,12 @@ import Vue from "vue/dist/vue.esm.browser";
 import { compileToFunctions } from "./compiler/index"; 
 import template from "./demo/directive"; 
 
-const { render } = compileToFunctions(template);
+const { render,staticRenderFns } = compileToFunctions(template);
 
 new Vue({
     // template,
     render,
+    staticRenderFns,
     data(){
         return {
             name:"吴家宝",
