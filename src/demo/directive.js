@@ -235,6 +235,20 @@
  */
    
 // =======================================  vmodel 实现input  ============================================
+/**
+ * 
+ * ast = {
+ *  directives:[{name:'model',rawName:'v-model',value:'name'}],
+ *  events:{input:{if($event.target.composing)return;name=$event.target.value}},
+ *  props:[{name:'value',value:'(name)'}]
+ * }
+ * 
+ * code = _c('input',{directives:[{name:"model", rawName:"v-model}",value:(name),expression:"name"}],domProps:{"value":(name)},on:{"input":function($event){if($event.target.composing)return;name=$event.target.value}}})
+ * 
+ * let template = `
+        <input v-model="name" />
+    `
+ */
 
 let template = `
     <input v-model="name" />

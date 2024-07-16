@@ -26,7 +26,7 @@ export function genData(el,state){
     }  
     // dom 原生属性
     if(el.props){
-        data += `domProps:${genProps(el.props)}`
+        data += `domProps:${genProps(el.props)},`
     }
     // 事件监听
     if (el.events) {

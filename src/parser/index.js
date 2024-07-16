@@ -1,6 +1,6 @@
 import { parseHTML } from "./html-parser";
 import { parseText } from "./text-parser";
-import { pluckModuleFunction,getAndRemoveAttr } from "../helpers";
+import { pluckModuleFunction } from "../helpers";
 import { processAttrs } from "./attrs";
 import { processIf,processFor,processIfConditions } from "./directive";
 

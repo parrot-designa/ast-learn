@@ -47,4 +47,4 @@ export function getBindingAttr(
 export * from './attrs';
 export * from './reg';
 export * from './util';
-export * from './props';
+export * from '../parser/props';
