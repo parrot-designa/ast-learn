@@ -1,4 +1,4 @@
-Vue2编译原理
+Vue2编译原理 && Vue-loader编译原理
 
 
 # 一、Vue项目开发模式
@@ -141,3 +141,61 @@ Vue.prototype.$mount = function (
 } 
 ```
 
+
+# 三、vue-loader编译原理
+
+此前，我们把 template 当作选项传递至 Vue 实例里，Vue 内部会将模板字符串转化为渲染函数，并将其挂载在 Vue 实例的 render 方法上，以便在后续运行时，Vue 能够对其加以渲染。
+
+然而，在我们日常的开发过程中，常常会采用单文件组件（SFC）的开发模式。简而言之，一个 .vue 文件就相当于一个独立的组件，它对组件的 HTML 模板、CSS 样式以及 JS 逻辑进行了封装。也就是我们频繁使用的 .vue 文件，一般来说，.vue 文件需要依靠第三方的插件或者库来完成编译。以下是常用的关于 .vue 的 Webpack 配置。
+
+```js
+const { VueLoaderPlugin } = require('vue-loader');
+
+module.exports = function(){
+  module:{
+    rules:[
+      {
+        test: /\.vue$/,
+        loader:'vue-loader'
+      }
+    ]
+  },
+  plugins:[
+    new VueLoaderPlugin()
+  ]
+}
+```
+
+上述配置中的 module 和 plugins 是做什么用的呢？这便是我们在本章需要学习的知识要点。
+
+## 1. webpack的loader和plugin
+
+### 1.1 webpack的编译流程
+
+在 Vue 项目里，浏览器无法识别 .vue 文件，因而需要借助 Webpack（基础框架）以及 vue-loader（Webpack 的扩展插件）来对 Vue 文件予以编译，从而使浏览器能够识别。
+
+![alt text](image-1.png)
+
+1. 初始化参数阶段
+
+在此步骤中，会从我们所配置的 webpack.config.js 里读取到的相应配置参数，和 shell 命令中传递进来的参数加以合并，以获取最终的打包配置参数。
+
+2. 编译准备阶段
+
+在这一步，我们会通过调用 webpack() 方法来返回一个 compiler 方法，以此创建我们的 compiler 对象，同时注册各个 Webpack Plugin。接着找到配置入口中的 entry 代码，调用 compiler.run() 方法来进行编译。
+
+> 我们在webpack.config.js配置的VueLoaderPlugin就是在这里注册
+
+3. 模块编译阶段
+
+从入口模块进行分析，调用与文件相匹配的 loaders 来对文件进行处理。与此同时，分析模块所依赖的其他模块，以递归的方式开展模块编译工作。
+
+> 我们在webpack.config.js配置的rules中的vue-loader就是在这里解析
+
+4. 完成编译阶段
+
+在递归完成后，每个被引用的模块都经由 loaders 处理完毕，同时也获取到了模块之间的相互依赖关系。
+
+5. 输出文件阶段
+
+整理模块的依赖关系，同时把处理后的文件输出至 output 所指定的磁盘目录当中。
