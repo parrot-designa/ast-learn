@@ -13,43 +13,49 @@ module.exports = {
     module:{
         rules:[
             {
-                test: /\.vue$/,
-                use: [{
-                    loader: path.resolve(__dirname, 'babel/one'),
-                }],
+              test: /\.vue$/,
+              use: [
+                {
+                  loader: path.resolve(__dirname, 'babel/a'),
+                }
+              ],
+              enforce:"pre"
             }, 
             {
-                test: /\.vue$/,
-                use: [{
-                    loader: path.resolve(__dirname, 'babel/two'),
-                }],
-            }, 
+              test: /\.vue$/,
+              use: [
+                {
+                  loader: path.resolve(__dirname, 'babel/b'),
+                }
+              ],
+              enforce:"pre"
+            },  
             {
-                test: /\.vue$/,
-                use: [{
-                    loader: path.resolve(__dirname, 'babel/three'),
-                }],
+              test: /\.vue$/,
+              use: [
+                {
+                  loader: path.resolve(__dirname, 'babel/c'),
+                }
+              ]
             },
-            // {
-            //     test: /\.js$/,
-            //     use: [{
-            //         loader: path.resolve(__dirname, 'babel/two'),
-            //     }],
-            // }, 
-            // {
-            //     test: /\.vue$/,
-            //     use: [
-            //         /* config.module.rule('vue').use('vue-loader') */
-            //         {
-            //             loader: 'vue-loader',
-            //             options: {
-            //                 compilerOptions: {
-            //                     whitespace: 'condense'
-            //                 }
-            //             }
-            //         }
-            //     ]  
-            // }
+            {
+              test: /\.vue$/,
+              use: [
+                {
+                  loader: path.resolve(__dirname, 'babel/d'),
+                }
+              ],
+              enforce:"post"
+            },
+            {
+              test: /\.vue$/,
+              use: [
+                {
+                  loader: path.resolve(__dirname, 'babel/e'),
+                }
+              ],
+              enforce:"post"
+            }
         ]
     },
     plugins:[

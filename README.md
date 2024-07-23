@@ -174,7 +174,7 @@ module.exports = function(){
 
 在 Vue 项目里，浏览器无法识别 .vue 文件，因而需要借助 Webpack（基础框架）以及 vue-loader（Webpack 的扩展插件）来对 Vue 文件予以编译，从而使浏览器能够识别。
 
-![alt text](image-1.png)
+![alt text](image-2.png)
 
 1. 初始化参数阶段
 
@@ -199,3 +199,241 @@ module.exports = function(){
 5. 输出文件阶段
 
 整理模块的依赖关系，同时把处理后的文件输出至 output 所指定的磁盘目录当中。
+
+### 1.2 webpack的loader
+
+#### 1.2.1 为什么会存在loader
+
+Webpack 仅能够处理 .js 和 .json 文件，然而在打包的过程中倘若遇到其他类型的文件，例如 .vue 文件等等，Webpack 就显得力不从心了。
+
+Loader 的出现，使得 Webpack 具备了处理其他类型文件的能力。
+
+如下配置常用来+解析less文件。
+
+```js
+module.exports = {
+    // ...
+    module: {
+        rules: [
+            {
+                test: /.less$/i, // 匹配.less结尾的文件
+                use: [
+                    "style-loader",
+                    "css-loader",
+                    'less-loader'
+                ],
+            }
+        ],
+    }
+    // ...
+};
+```
+
+```js
+//js文件
+import "./style.less";
+```
+
+在 JavaScript 代码中，使用 import 导入了一个 .less 文件，当 Webpack 碰到这种 .less 后缀的文件时，就茫然无措了，因为它只能处理以 .js 和 .json 结尾的文件。
+
+这时候就轮到 loader 登场了，有了 loader 所赋予的能力，Webpack 便能够处理 .less 文件了。
+
+1. 在 Webpack 的模块编译阶段，一旦遇到以 .less 后缀结尾的文件，Webpack 会先把文件内容发送给 less-loader 进行处理，less-loader 会将所有的 Less 语法转换为普通的 CSS 语法。
+2. 普通的 CSS 样式会继续被发送给 css-loader 处理，css-loader 最主要的功能在于解析 CSS 语法中的 @import 和图片路径，处理完成后，导入的 CSS 被合并在了一起。
+3. 合并后的 CSS 文件会继续传递下去，被发送给 style-loader 进行处理，它最终会将样式内容插入到 HTML 头部的 ```<style>``` 标签下，页面也由此添加了样式。
+
+从上述的案例当中我们能够看出，每个 loader 的职责都是单一的，各自只负责自身的那一小部分。但不管是何种格式的文件，只要将具备特定功能的 loader 组合起来，就能够增强 Webpack 的能力，让各种各样稀奇古怪的文件都能够被正确地识别并处理。
+
+#### 1.2.2 什么是loader
+
+Loader 实际上就是一个内容转换工具，它能够把 Webpack 无法识别的文件，转换为标准的 JavaScript 模块，然后交由 Webpack 进行处理。
+
+Loader 的本质是一个导出了一个函数的 JavaScript 模块，这也恰好体现了在 Webpack 中“一切皆模块”的理念。
+
+Webpack 内部的 loader runner 会调用这个函数，并且将上一个 loader 所产生的结果或者资源文件传入其中。函数中的 this 作为上下文会由 Webpack 进行填充。
+
+```js
+/**
+ * @param {string/Buffer} content源文件的内容
+ * @param {object}[map] sourcemap相关的数据
+ * @param {any} [meta] 元数据，可以是任何内容
+ */
+module.exports = function (content, map, meta) {
+    // 将webpack不能识别的文件内容content，转换处理后，进行返回
+    return content
+} 
+```
+ 
+#### 1.2.3 loader的分类
+
+在 Webpack 中，loader 可以被分为 4 类，分别是：
+
+1. pre 前置 loader
+2. normal 普通 loader
+3. inline 内联 loader
+4. post 后置 loader
+
+##### 1.2.3.1 非内联类型loader
+
+pre 和 post loader，可以通过 rule 对象的 enforce 属性来指定，不指定时，默认为normal loader。
+
+```js
+module.exports = {
+  ...
+  module:{
+        rules:[
+            {
+              test: /\.vue$/,
+              use: [
+                {
+                    loader: path.resolve(__dirname, 'babel/one'),
+                },
+                {
+                    loader: path.resolve(__dirname, 'babel/two'),
+                },
+                {
+                    loader: path.resolve(__dirname, 'babel/three'),
+                }
+              ],
+              enforce: "pre", // pre loader
+            }, 
+            {
+              test: /\.vue$/,
+              use: [{
+                loader: path.resolve(__dirname, 'babel/two'), //normal loader
+              }],
+            }, 
+            {
+              test: /\.vue$/,
+              use: [{
+                loader: path.resolve(__dirname, 'babel/three'),
+              }],
+              enforce: "post", // post loader
+            }
+          ]
+  }
+  ...
+} 
+```
+
+##### 1.2.3.2 内联类型loader
+
+webpack允许在引入模块的时候直接指定loader，这样指定loader的方式称之为inline loader
+
+```js
+import common from 'loader-a!loader-b!loader-c?type=abc!./common.js'
+```
+
+每个loader之前同!隔开，允许携带query参数，最后的模块也使用!隔开。
+
+内联的 inline loader 不在webpack的配置文件中配置，它仅在业务代码中配置且使用不多。
+
+#### 1.2.4 loader的执行顺序
+
+相同的优先级指的是同一种类型（```pre  / post  / normal ```）的loader。
+
+##### 1.2.4.1 相同优先级
+
+对于具有相同优先级的 loader 而言，其执行顺序是```从右到左，从下到上```来执行每个 loader 。
+
+所以对于下面的这个配置来说，loader的执行顺序是```c-loader => b-loader => a-loader```
+
+![alt text](image-4.png)
+
+```js
+module.exports = { 
+  ...
+  module:{
+        rules:[
+            {
+              test: /\.vue$/,
+              use: [
+                {
+                  loader: path.resolve(__dirname, 'babel/a'),
+                }
+              ]
+            }, 
+            {
+              test: /\.vue$/,
+              use: [
+                {
+                  loader: path.resolve(__dirname, 'babel/b'),
+                }
+              ]
+            },  
+            {
+              test: /\.vue$/,
+              use: [
+                {
+                  loader: path.resolve(__dirname, 'babel/c'),
+                }
+              ]
+            }
+        ]
+  },
+  ...
+}
+```
+
+##### 1.2.4.2 不同优先级
+
+对于不同优先级来说，```pre（前置）``` => ```normal（普通）``` => ```inline（内联）``` => ```post（后置）```
+
+所以对于下面的这个配置来说，loader的执行顺序是 ```loader-b``` =>```loader-a``` => ```loader-c``` => ```loader-e``` => ```loader-d```
+
+![alt text](image-5.png)
+
+```js
+module.exports = {
+  module:{
+    rules:[
+      {
+        test: /\.vue$/,
+        use: [
+          {
+            loader: path.resolve(__dirname, 'babel/a'),
+          }
+        ],
+        enforce:"pre"
+      }, 
+      {
+        test: /\.vue$/,
+        use: [
+          {
+            loader: path.resolve(__dirname, 'babel/b'),
+          }
+        ],
+        enforce:"pre"
+      }, 
+      {
+        test: /\.vue$/,
+        use: [
+          {
+            loader: path.resolve(__dirname, 'babel/c'),
+          }
+        ],
+      }, 
+      {
+        test: /\.vue$/,
+        use: [
+          {
+            loader: path.resolve(__dirname, 'babel/d'),
+          }
+        ],
+        enforce:"post"
+      }, 
+      {
+        test: /\.vue$/,
+        use: [
+          {
+            loader: path.resolve(__dirname, 'babel/e'),
+          }
+        ],
+        enforce:"post"
+      }, 
+    ]
+  }
+}
+```
+
+##### 1.2.4.3 pitching 阶段
