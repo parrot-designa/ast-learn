@@ -437,3 +437,56 @@ module.exports = {
 ```
 
 ##### 1.2.4.3 pitching 阶段
+
+首先我们要知道，loader执行过程分为两个阶段，分别是```Pitching```和```Normal```阶段。
+
+在开发Loader时，我们可以在导出的函数上添加一个pitch属性，它的值也是一个函数。
+
+```js 
+let oneLoader = function(source) {
+    console.info('a-loader');
+    return source + 'a-loader';
+};
+oneLoader.pitch = function(){
+    console.info('a-loader的pitch');
+}
+module.exports = oneLoader
+```
+所以Normal阶段执行指的就是执行loader函数中的内容，而Pitching阶段的执行指的就是执行loader上的pitch函数。
+
+那pitching阶段和normal阶段执行时机有什么不同呢？pitch阶段与normal阶段执行过程正好是相反的。
+
+![alt text](image-6.png)
+
+##### 1.2.4.4 pitching 阶段的作用
+
+
+### 1.3 webpack的plugin
+
+## 2. 第一步: 使用VueLoaderPlugin扩展loader
+
+在配置解析vue文件的webpack时，我们在plugins中注册一个一个VueLoaderPlugin，该插件直接从vue-loader中导入：
+
+```js
+const { VueLoaderPlugin } = require('vue-loader');
+
+module.exports = {
+  plugins:[
+    new VueLoaderPlugin(),
+  ]
+}
+```
+
+### 2.1 区分webpack版本来引用不同的vue
+
+```js
+class VueLoaderPlugin {
+  apply(compiler){
+    const normalModule = compiler.webpack
+      ? compiler.webpack.NormalModule
+      : require('webpack/lib/NormalModule')
+  }
+}
+
+module.exports = VueLoaderPlugin;
+```
