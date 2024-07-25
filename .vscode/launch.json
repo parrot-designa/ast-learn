@@ -12,8 +12,10 @@
                 "<node_internals>/**"
             ],
             "program": "${workspaceFolder}/node_modules/.bin/webpack-dev-server",
-            "runtimeExecutable": "/Users/wjb/.nvm/versions/node/v18.16.0/bin/node",
-            "args": ["start"]
+            "runtimeExecutable": "/usr/local/bin/node",
+            "args": [
+                "start"
+            ]
         },
         {
             "type": "pwa-node",

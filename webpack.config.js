@@ -1,7 +1,6 @@
 const path = require('path');
 const HtmlWebpackPlugin=require('html-webpack-plugin');
-const { VueLoaderPlugin } = require('vue-loader');
-const VuePlugin = require('./plugin/index');
+const { VueLoaderPlugin } = require('./vue-loader'); 
  
 
 module.exports = { 
@@ -15,13 +14,12 @@ module.exports = {
         rules:[
             {
                 test: /\.vue$/,
-                loader:'vue-loader'
+                loader:path.resolve(__dirname, 'vue-loader')
             }
         ]
     },
     plugins:[
-        // new VueLoaderPlugin(),
-        new VuePlugin(),
+        new VueLoaderPlugin(), 
         new HtmlWebpackPlugin({
             template:'public/index.html',//开发环境需要路径
             inject:'body'

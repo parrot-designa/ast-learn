@@ -2,6 +2,7 @@ const id = 'vue-loader-plugin'
 const BasicEffectRulePlugin = require('webpack/lib/rules/BasicEffectRulePlugin')
 const BasicMatcherRulePlugin = require('webpack/lib/rules/BasicMatcherRulePlugin')
 const RuleSetCompiler = require('webpack/lib/rules/RuleSetCompiler')
+// 解析和应用use字段 UseEffectRulePlugin 会处理 loader 属性，并构建一个 use 类型的效果描述。
 const UseEffectRulePlugin = require('webpack/lib/rules/UseEffectRulePlugin')
 
 const objectMatcherRulePlugins = []
@@ -46,11 +47,7 @@ class VuePlugin {
         const normalModule = compiler.webpack
             ? compiler.webpack.NormalModule
             : require('webpack/lib/NormalModule')
-        console.log("vue-plugin执行")
-        // webpack编译流程的“compilation”阶段
-        compiler.hooks.compilation.tap(id, (compilation) => {
-
-        })
+        console.log("vue-plugin执行") 
         // compiler options是webpack配置的引用 获取配置的rules
         const rules = compiler.options.module.rules
         let rawVueRule
@@ -94,10 +91,51 @@ class VuePlugin {
                 `没有找到匹配.vue文件的规则`
             )
         }
+        /**
+         * vueRules 数组中提取出所有类型为 'use' 的规则，并返回一个由这些规则的 value 属性组成的数组
+         */
         const vueUse = vueRules
             .filter((rule) => rule.type === 'use')
             .map((rule) => rule.value)
-        debugger;
+
+        const vueLoaderUseIndex = vueUse.findIndex((u) => {
+          /**
+           * 1. 直接匹配 vue-loader：
+           *    如果字符串以 vue-loader 开始，则匹配成功。
+           * 2. 匹配路径中的 vue-loader：
+           *    如果字符串中包含路径分隔符（/、\ 或 @）后面跟着 vue-loader，则匹配成功
+           */
+          return /^vue-loader|(\/|\\|@)vue-loader/.test(u.loader)
+        })
+
+        if(vueLoaderUseIndex < 0){
+          throw new Error(
+            `请确保你的.vue规则中配置了vue-loader`
+          )
+        }
+        const vueLoaderUse = vueUse[vueLoaderUseIndex]
+        vueLoaderUse.ident = 'vue-loader-options'
+        vueLoaderUse.options = vueLoaderUse.options || {}
+
+        // 是否配置了某种内联匹配资源功能
+        const enableInlineMatchResource =
+          vueLoaderUse.options.experimentalInlineMatchResource
+
+        const pitcher = {
+          loader: require.resolve('../loaders/pitcher'),
+          resourceQuery: (query) => {
+            if (!query) {
+              return false
+            }
+            // const parsed = qs.parse(query.slice(1))
+            // return parsed.vue != null
+          },
+          options: vueLoaderUse.options
+        }
+        compiler.options.module.rules = [
+          pitcher,
+          ...rules
+        ]; 
     }
 }
 
