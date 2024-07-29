@@ -1,5 +1,5 @@
 <template>
-    <span>{{name}}</span>
+    <span class="hello">{{name}}</span>
 </template>
 
 <script>
@@ -11,3 +11,4 @@ export default {
     }
 }
 </script>
+

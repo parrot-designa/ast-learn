@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "webpack-dev-server"
+    "start": "webpack-dev-server",
+    "build": "babel src --out-dir lib"
   },
   "repository": {
     "type": "git",
@@ -22,6 +23,9 @@
     "vue": "2.7.16"
   },
   "devDependencies": {
+    "@babel/cli": "^7.24.8",
+    "@babel/core": "^7.24.9",
+    "@babel/preset-env": "^7.25.0",
     "html-webpack-plugin": "^5.6.0",
     "vue-cli-service": "^5.0.10",
     "vue-loader": "15.9.8",

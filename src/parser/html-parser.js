@@ -114,7 +114,8 @@ export function parseHTML(html,options={}){
         if(start){
             const match = {
                 tagName:start[1],
-                attrs:[]
+                attrs:[],
+                start:index
             }
             advance(start[0].length)
             let end,attr 
@@ -131,6 +132,7 @@ export function parseHTML(html,options={}){
             if(end){
                 match.unarySlash = end[1]
                 advance(end[0].length)
+                match.end = index
                 return match;
             }
         }
@@ -204,7 +206,7 @@ export function parseHTML(html,options={}){
         }
         
         if(options.start){
-            options.start(tagName, attrs, unary)
+            options.start(tagName, attrs, unary,match.start, match.end)
         }
     }
 }
