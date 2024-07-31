@@ -75,7 +75,7 @@ module.exports = function (source) {
   })
 
   // cache descriptor
-  setDescriptor(resourcePath, descriptor)
+  setDescriptor(resourcePath, descriptor)vue-loader
 
   // module id for scoped CSS & hot-reload
   const rawShortFilePath = path

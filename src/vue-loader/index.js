@@ -18,6 +18,7 @@ function loader(source){
         sourceMap,
         mode
     } = loaderContext;
+    console.log("处理loader==>",resourcePath)
     //stringifyRequest 生成一个可以被直接插入到 JavaScript 代码中的模块请求字符串。
     const stringifyRequest = (r) => loaderUtils.stringifyRequest(loaderContext, r)
     // 是否是生产模式
@@ -64,13 +65,25 @@ function loader(source){
 
         templateImport = `import { render, staticRenderFns } from ${templateRequest}`
     }
-    debugger
 
     let code = `
     ${templateImport}
     `;
+    if(this.resourcePath === '/Users/wjb/Desktop/life/learn/front-end/framework/vue/learn-vue2-ast/src/App.vue'){
+        return `
+            import App from "./child-view/A.vue";
+            import App2 from "./child-view/B.vue";
 
-    return code;
+            export default {}
+        `;
+    }else if(this.resourcePath === '/Users/wjb/Desktop/life/learn/front-end/framework/vue/learn-vue2-ast/src/child-view/A.vue'){
+        return 'import App from "./A-child.vue"';
+    }else if(this.resourcePath === '/Users/wjb/Desktop/life/learn/front-end/framework/vue/learn-vue2-ast/src/child-view/B.vue'){
+        return 'import App from "./B-child.vue"';
+    }else {
+        return "other"
+    }
+    
 }
 
 

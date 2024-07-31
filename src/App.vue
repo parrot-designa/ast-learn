@@ -1,14 +1,10 @@
 <template>
-    <span class="hello">{{name}}</span>
+    <p><span>测试</span><span>测试</span><span>测试</span>
+        <span>测试</span>
+        <span>测试</span>
+        <span>测试</span>
+    </p>
 </template>
 
-<script>
-export default {
-    data(){
-        return {
-            name: "Hello world",
-        }
-    }
-}
-</script>
-
+ 
+ 

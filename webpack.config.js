@@ -8,7 +8,7 @@ module.exports = {
     mode:"development",
     entry: "./src/main.js",
     devServer:{
-        port:8080,
+        port:8089,
         static:'public'
     },
     module:{
